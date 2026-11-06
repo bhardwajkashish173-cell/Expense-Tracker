@@ -5,6 +5,7 @@ import SummaryCard from './components/SummaryCard'
 import ExpenseChart from './components/ExpenseChart'
 import Transactions from './components/Transactions'
 import TransactionModal from './components/TransactionModal'
+import UserNameModal from './components/UserNameModal'
 import CategoriesView from './components/CategoriesView'
 import SettingsView from './components/SettingsView'
 import {
@@ -17,6 +18,7 @@ import {
 const STORAGE_KEY_TRANSACTIONS = 'auren_transactions_v1'
 const STORAGE_KEY_CURRENCY = 'auren_currency_v1'
 const STORAGE_KEY_RATES = 'auren_rates_v1'
+const STORAGE_KEY_USER = 'auren_user_profile_v1'
 
 export default function App() {
   // Purely LocalStorage-driven transactions state — strictly NO sample data
@@ -63,10 +65,41 @@ export default function App() {
 
   const [isLiveRates, setIsLiveRates] = useState(false)
 
+  // User Profile Name (persisted in LocalStorage)
+  const [userName, setUserName] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_USER)
+      if (saved && saved.trim()) {
+        return saved.trim()
+      }
+    } catch (e) {
+      console.error('Failed to parse saved user name:', e)
+    }
+    return 'Kashish Bhardwaj'
+  })
+
+  // First-time onboarding detection (if user has never visited before)
+  const [isFirstTime, setIsFirstTime] = useState(() => {
+    try {
+      return !localStorage.getItem(STORAGE_KEY_USER)
+    } catch {
+      return false
+    }
+  })
+
+  // Control for User Name Modal (auto-opens if first time visit)
+  const [isNameModalOpen, setIsNameModalOpen] = useState(() => {
+    try {
+      return !localStorage.getItem(STORAGE_KEY_USER)
+    } catch {
+      return false
+    }
+  })
+
   // Active navigation tab ('overview' | 'transactions' | 'analytics' | 'categories' | 'settings')
   const [activeTab, setActiveTab] = useState('overview')
 
-  // Modal control
+  // Transaction Modal control
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingTransaction, setEditingTransaction] = useState(null)
 
@@ -95,7 +128,6 @@ export default function App() {
           }
         }
       } catch (err) {
-        // Fallback to local high-accuracy rates if offline
         console.warn('Using baseline exchange rates:', err)
       }
     }
@@ -163,7 +195,7 @@ export default function App() {
     })}`
   }
 
-  // CRUD actions
+  // CRUD actions for Transactions
   const handleSaveTransaction = (transactionData) => {
     if (editingTransaction) {
       // Edit existing
@@ -199,6 +231,23 @@ export default function App() {
     setTransactions(newTransactions)
   }
 
+  // User Profile Name change & persistence
+  const handleSaveUserName = (newName) => {
+    const validName = newName.trim() || 'Kashish Bhardwaj'
+    setUserName(validName)
+    try {
+      localStorage.setItem(STORAGE_KEY_USER, validName)
+    } catch (e) {
+      console.error(e)
+    }
+    setIsFirstTime(false)
+  }
+
+  const handleOpenEditNameModal = () => {
+    setIsFirstTime(false)
+    setIsNameModalOpen(true)
+  }
+
   return (
     <div className="min-h-screen bg-[#F6F8F5] text-[#19241B] flex flex-col md:flex-row antialiased selection:bg-[#16A34A]/20 selection:text-[#16A34A] font-sans">
       
@@ -213,13 +262,15 @@ export default function App() {
       {/* Main Content Area */}
       <main className="flex-1 min-w-0 flex flex-col pb-24 md:pb-10">
         
-        {/* Top Header with Currency Switcher, Kashish Bhardwaj, KB Avatar */}
+        {/* Top Header with Currency Switcher, Kashish Bhardwaj, KB Avatar & Name Edit Trigger */}
         <Header
           onOpenAddModal={handleOpenAddModal}
           currency={currency}
           setCurrency={setCurrency}
           exchangeRates={exchangeRates}
           isLiveRates={isLiveRates}
+          userName={userName}
+          onOpenEditNameModal={handleOpenEditNameModal}
         />
 
         {/* Dynamic Content Views */}
@@ -308,7 +359,7 @@ export default function App() {
             </>
           )}
 
-          {/* TAB 2: TRANSACTIONS (Full Searchable & Filterable Table with Live Conversion) */}
+          {/* TAB 2: TRANSACTIONS */}
           {activeTab === 'transactions' && (
             <div className="space-y-6">
               <Transactions
@@ -414,6 +465,8 @@ export default function App() {
               onClearAllData={handleClearAllData}
               onImportData={handleImportData}
               transactions={transactions}
+              userName={userName}
+              onOpenEditNameModal={handleOpenEditNameModal}
             />
           )}
 
@@ -435,6 +488,18 @@ export default function App() {
           currencySymbol={currency.symbol}
           currencyCode={currency.code}
           editingTransaction={editingTransaction}
+        />
+      )}
+
+      {/* User Name Welcome / Edit Modal */}
+      {isNameModalOpen && (
+        <UserNameModal
+          key={isFirstTime ? 'welcome-onboarding' : `edit-${userName}`}
+          isOpen={isNameModalOpen}
+          onClose={() => setIsNameModalOpen(false)}
+          onSave={handleSaveUserName}
+          currentName={userName}
+          isFirstTime={isFirstTime}
         />
       )}
 

@@ -3,7 +3,8 @@ import {
   Calendar,
   Plus,
   ChevronDown,
-  Coins
+  Coins,
+  Edit2
 } from 'lucide-react'
 import { CURRENCIES, DEFAULT_EXCHANGE_RATES } from '../data/initialData'
 
@@ -12,10 +13,23 @@ export default function Header({
   currency,
   setCurrency,
   exchangeRates = DEFAULT_EXCHANGE_RATES,
-  isLiveRates = false
+  isLiveRates = false,
+  userName = 'Kashish Bhardwaj',
+  onOpenEditNameModal
 }) {
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false)
   const currencyMenuRef = useRef(null)
+
+  // Extract first name for greeting
+  const firstName = userName ? userName.trim().split(/\s+/)[0] : 'Kashish'
+
+  // Extract initials for avatar
+  const getInitials = (name) => {
+    if (!name) return 'KB'
+    const parts = name.trim().split(/\s+/)
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase()
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+  }
 
   // Determine dynamic greeting
   const getGreeting = () => {
@@ -56,14 +70,14 @@ export default function Header({
     <header className="sticky top-0 z-20 backdrop-blur-xl bg-[#F6F8F5]/85 px-4 sm:px-6 lg:px-8 py-4 transition-all border-b border-gray-100/60">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         
-        {/* Left: Dynamic Greeting with Kashish Bhardwaj & Date */}
+        {/* Left: Dynamic Greeting with User's First Name & Date */}
         <div>
           <div className="flex items-center gap-2 text-xs font-bold tracking-wider uppercase text-[#6B7C6E]">
             <Calendar size={13} className="text-[#16A34A]" />
             <span>{todayFormatted}</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-[#19241B] tracking-tight mt-0.5 flex items-center gap-2">
-            <span>{getGreeting()}, Kashish!</span>
+            <span>{getGreeting()}, {firstName}!</span>
             <span className="text-xl sm:text-2xl">🌿</span>
           </h1>
         </div>
@@ -145,21 +159,26 @@ export default function Header({
             <span>Add Transaction</span>
           </button>
 
-          {/* User Profile: Kashish Bhardwaj & KB Avatar */}
-          <div className="flex items-center gap-2.5 pl-2 sm:pl-3 border-l border-gray-200/80">
+          {/* Clickable User Profile: Opens Edit Name Modal */}
+          <div
+            onClick={onOpenEditNameModal}
+            className="flex items-center gap-2.5 pl-2 sm:pl-3 border-l border-gray-200/80 cursor-pointer group"
+            title="Click to change your name"
+          >
             <div className="hidden sm:block text-right">
-              <span className="block text-xs font-bold text-[#19241B] leading-none">
-                Kashish Bhardwaj
+              <span className="block text-xs font-bold text-[#19241B] group-hover:text-[#16A34A] transition-colors leading-none">
+                {userName}
               </span>
-              <span className="text-[10px] font-semibold text-[#16A34A] tracking-wider uppercase mt-0.5 block">
-                Primary Account
+              <span className="text-[10px] font-semibold text-[#16A34A] tracking-wider uppercase mt-0.5 flex items-center justify-end gap-1">
+                <span>Primary Account</span>
+                <Edit2 size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" />
               </span>
             </div>
 
-            {/* KB Avatar with Green & Yellow Ring */}
-            <div className="relative group cursor-pointer" title="Kashish Bhardwaj">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#16A34A] via-[#EAB308]/60 to-white flex items-center justify-center text-white font-extrabold text-xs shadow-[0_2px_12px_rgba(22,163,74,0.25)] ring-2 ring-white">
-                KB
+            {/* Avatar with Initials & Edit Overlay */}
+            <div className="relative group">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#16A34A] via-[#EAB308]/60 to-white flex items-center justify-center text-white font-extrabold text-xs shadow-[0_2px_12px_rgba(22,163,74,0.25)] ring-2 ring-white group-hover:scale-105 transition-transform">
+                {getInitials(userName)}
               </div>
               <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#16A34A] ring-2 ring-white" />
             </div>

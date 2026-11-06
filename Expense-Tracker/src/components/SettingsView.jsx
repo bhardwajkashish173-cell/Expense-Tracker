@@ -7,9 +7,9 @@ import {
   Upload,
   ShieldCheck,
   Check,
-  User,
   Wallet,
-  Sparkles
+  Sparkles,
+  Edit2
 } from 'lucide-react'
 import { CURRENCIES, DEFAULT_EXCHANGE_RATES } from '../data/initialData'
 
@@ -19,12 +19,22 @@ export default function SettingsView({
   exchangeRates = DEFAULT_EXCHANGE_RATES,
   onClearAllData,
   onImportData,
-  transactions = []
+  transactions = [],
+  userName = 'Kashish Bhardwaj',
+  onOpenEditNameModal
 }) {
   const [showClearConfirm, setShowClearConfirm] = useState(false)
   const [exportSuccess, setExportSuccess] = useState(false)
   const [importMessage, setImportMessage] = useState('')
   const fileInputRef = useRef(null)
+
+  // Extract initials for avatar
+  const getInitials = (name) => {
+    if (!name) return 'KB'
+    const parts = name.trim().split(/\s+/)
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase()
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+  }
 
   // Export transactions as JSON file
   const handleExport = () => {
@@ -77,7 +87,7 @@ export default function SettingsView({
   return (
     <div className="space-y-6 max-w-4xl">
       
-      {/* Settings Header with Kashish Bhardwaj Profile */}
+      {/* Settings Header with User Profile Name */}
       <div className="glass-card rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <span className="text-xs font-bold uppercase tracking-wider text-[#16A34A]">
@@ -87,7 +97,7 @@ export default function SettingsView({
             Settings
           </h2>
           <p className="text-xs sm:text-sm text-[#6B7C6E] mt-1">
-            Personal vault configuration and storage controls for Kashish Bhardwaj.
+            Personal vault configuration and storage controls for {userName}.
           </p>
         </div>
         <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#16A34A] to-[#EAB308] text-white flex items-center justify-center shadow-md">
@@ -95,17 +105,17 @@ export default function SettingsView({
         </div>
       </div>
 
-      {/* Profile Card */}
-      <div className="glass-card rounded-3xl p-6 sm:p-7 flex items-center justify-between">
+      {/* Profile Card with Edit Name Button */}
+      <div className="glass-card rounded-3xl p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#16A34A] via-[#EAB308]/60 to-white flex items-center justify-center text-white font-extrabold text-lg shadow-[0_4px_16px_rgba(22,163,74,0.25)] ring-2 ring-white">
-            KB
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#16A34A] via-[#EAB308]/60 to-white flex items-center justify-center text-white font-extrabold text-lg shadow-[0_4px_16px_rgba(22,163,74,0.25)] ring-2 ring-white shrink-0">
+            {getInitials(userName)}
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-lg font-extrabold text-[#19241B]">Kashish Bhardwaj</h3>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-lg font-extrabold text-[#19241B]">{userName}</h3>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#16A34A]/10 text-[#16A34A] border border-[#16A34A]/20">
-                Verified
+                Primary Account
               </span>
             </div>
             <p className="text-xs text-[#6B7C6E] mt-0.5">
@@ -113,10 +123,14 @@ export default function SettingsView({
             </p>
           </div>
         </div>
-        <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-[#16A34A]">
-          <User size={15} />
-          <span>Active Session</span>
-        </div>
+
+        <button
+          onClick={onOpenEditNameModal}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl glass-panel hover:bg-white text-xs font-bold text-[#16A34A] transition-all self-start sm:self-auto shadow-sm active:scale-95 cursor-pointer"
+        >
+          <Edit2 size={14} />
+          <span>Change Name</span>
+        </button>
       </div>
 
       {/* Currency Preference Card with Live Auto-Conversion Rates */}
